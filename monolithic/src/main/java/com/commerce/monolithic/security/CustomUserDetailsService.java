@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.commerce.monolithic.domain.admin.entity.Admin;
+import com.commerce.monolithic.domain.admin.repository.AdminRepository;
 import com.commerce.monolithic.domain.customer.entity.Customer;
 
 import lombok.RequiredArgsConstructor;
