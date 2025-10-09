@@ -2,7 +2,9 @@ package com.commerce.monolithic.domain.customer.entity;
 
 import java.util.UUID;
 
-import com.commerce.monolithic.autotime.Time;
+import org.hibernate.annotations.SQLRestriction;
+
+import com.commerce.monolithic.autotime.BaseTimeEntity;
 import com.commerce.monolithic.autotime.UuidBinaryAttributeConverter;
 import com.commerce.monolithic.configenum.GlobalEnum;
 
@@ -11,28 +13,25 @@ import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@EqualsAndHashCode(of = "id")
+@SuperBuilder(toBuilder = true)
+@EqualsAndHashCode(of = "id", callSuper = false)
 @Entity
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "p_customer")
-public class Customer {
+public class Customer extends BaseTimeEntity {
 
 	@Id
 	@Convert(converter = UuidBinaryAttributeConverter.class)
@@ -64,9 +63,5 @@ public class Customer {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", length = 16, nullable = false)
 	private GlobalEnum.CustomerStatus status;
-
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "p_time_id", nullable = false, foreignKey = @ForeignKey(name = "fk_customer_p_time"))
-	private Time timeRef;
 
 }

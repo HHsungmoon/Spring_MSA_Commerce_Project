@@ -2,7 +2,9 @@ package com.commerce.monolithic.domain.catalogstore.entity;
 
 import java.util.UUID;
 
-import com.commerce.monolithic.autotime.Time;
+import org.hibernate.annotations.SQLRestriction;
+
+import com.commerce.monolithic.autotime.BaseTimeEntity;
 import com.commerce.monolithic.autotime.UuidBinaryAttributeConverter;
 import com.commerce.monolithic.configenum.GlobalEnum;
 
@@ -18,21 +20,22 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@EqualsAndHashCode(of = "id")
+@SuperBuilder(toBuilder = true)
+@EqualsAndHashCode(of = "id", callSuper = false)
 @Entity
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "stores")
-public class Store {
+public class Store extends BaseTimeEntity {
 
 	@Id
 	@Convert(converter = UuidBinaryAttributeConverter.class)
@@ -54,8 +57,4 @@ public class Store {
 	@Column(name = "status", length = 16, nullable = false)
 	private GlobalEnum.StoreStatus status;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "p_time_id", nullable = false,
-		foreignKey = @ForeignKey(name = "fk_stores_p_time"))
-	private Time timeRef;
 }

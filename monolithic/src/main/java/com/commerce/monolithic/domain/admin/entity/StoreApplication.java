@@ -3,7 +3,9 @@ package com.commerce.monolithic.domain.admin.entity;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.commerce.monolithic.autotime.Time;
+import org.hibernate.annotations.SQLRestriction;
+
+import com.commerce.monolithic.autotime.BaseTimeEntity;
 import com.commerce.monolithic.autotime.UuidBinaryAttributeConverter;
 import com.commerce.monolithic.configenum.GlobalEnum.StoreStatus;
 import com.commerce.monolithic.domain.catalogstore.entity.Manager;
@@ -21,21 +23,22 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@EqualsAndHashCode(of = "applicationId")
+@SuperBuilder(toBuilder = true)
+@EqualsAndHashCode(of = "applicationId", callSuper = false)
 @Entity
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "store_applications")
-public class StoreApplication {
+public class StoreApplication extends BaseTimeEntity {
 
 	@Id
 	@Convert(converter = UuidBinaryAttributeConverter.class)
@@ -71,9 +74,5 @@ public class StoreApplication {
 	@Column(name = "reviewed_at")
 	private Instant reviewedAt;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "p_time_id", nullable = false,
-		foreignKey = @ForeignKey(name = "fk_storeapps_p_time"))
-	private Time timeRef;
 }
 

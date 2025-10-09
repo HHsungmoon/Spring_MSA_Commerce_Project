@@ -1,8 +1,8 @@
 -- =====================================================================
 -- Schema: commerce_mono (MySQL 8.0+)
 -- Charset/Collation: utf8mb4 / utf8mb4_0900_ai_ci
--- Soft Delete 전략: 실제 DELETE 금지, FK는 모두 RESTRICT
--- UUID v7 저장: BINARY(16)  (애플리케이션에서 UUID_TO_BIN(:v7, 0) 사용 권장)
+-- Soft Delete 전략: 실제 DELETE 금지 (deleted_at IS NULL 조건으로 조회)
+-- UUID v7 저장: BINARY(16)
 -- =====================================================================
 
 SET NAMES utf8mb4;
@@ -15,37 +15,7 @@ USE commerce_mono;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- =====================================================================
--- Database bootstrap
--- =====================================================================
-CREATE DATABASE IF NOT EXISTS commerce_mono
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_0900_ai_ci;
-
-USE commerce_mono;
-
-SET NAMES utf8mb4;
-SET SESSION innodb_strict_mode = ON;
-SET SESSION sql_require_primary_key = OFF;
--- 초기 개발 편의. 운영 전 ON 권장.
-
--- =====================================================================
--- p_time (공통 메타/소프트삭제)
--- =====================================================================
-CREATE TABLE p_time
-(
-    p_time_id  BINARY(16) NOT NULL,
-    created_at TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by BINARY(16) NULL,
-    updated_at TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    updated_by BINARY(16) NULL,
-    deleted_at TIMESTAMP  NULL,
-    deleted_by BINARY(16) NULL,
-    PRIMARY KEY (p_time_id)
-) ENGINE = InnoDB
-  ROW_FORMAT = DYNAMIC;
-
--- =====================================================================
--- 1) Identity & Roles (속성 순서 통일: id, name, nickname, email, password, phone, status, ... , p_time_id)
+-- 1) Identity & Roles
 -- =====================================================================
 CREATE TABLE p_customer
 (
@@ -58,11 +28,14 @@ CREATE TABLE p_customer
     age          SMALLINT                                 NULL,
     gender       ENUM ('MALE','FEMALE','OTHER','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
     status       ENUM ('ACTIVE','INACTIVE','BANNED')      NOT NULL DEFAULT 'ACTIVE',
-    p_time_id    BINARY(16)                               NOT NULL,
+
+    -- Auditing (inline)
+    created_at   TIMESTAMP                                NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP                                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at   TIMESTAMP                                NULL,
+
     PRIMARY KEY (id),
-    CONSTRAINT fk_customer_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT
+    UNIQUE KEY uk_customer_email (email)
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
@@ -75,11 +48,14 @@ CREATE TABLE p_manager
     password     VARCHAR(255)                        NOT NULL,
     phone_number VARCHAR(18)                         NULL,
     status       ENUM ('ACTIVE','INACTIVE','BANNED') NOT NULL DEFAULT 'ACTIVE',
-    p_time_id    BINARY(16)                          NOT NULL,
+
+    -- Auditing (inline)
+    created_at   TIMESTAMP                           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP                           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at   TIMESTAMP                           NULL,
+
     PRIMARY KEY (id),
-    CONSTRAINT fk_manager_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT
+    UNIQUE KEY uk_manager_email (email)
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
@@ -92,11 +68,14 @@ CREATE TABLE p_admins
     password     VARCHAR(255) NOT NULL,
     phone_number VARCHAR(18)  NULL,
     position     VARCHAR(50)  NULL,
-    p_time_id    BINARY(16)   NOT NULL,
+
+    -- Auditing (inline)
+    created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at   TIMESTAMP    NULL,
+
     PRIMARY KEY (id),
-    CONSTRAINT fk_admins_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT
+    UNIQUE KEY uk_admins_email (email)
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
@@ -113,52 +92,60 @@ CREATE TABLE p_address
     state           VARCHAR(100) NULL,
     country_code    CHAR(2)      NOT NULL DEFAULT 'KR',
     is_default      TINYINT(1)   NOT NULL DEFAULT 0,
-    p_time_id       BINARY(16)   NOT NULL,
+
+    -- Auditing (inline)
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at      TIMESTAMP    NULL,
+
     PRIMARY KEY (id),
     CONSTRAINT fk_address_customer
         FOREIGN KEY (customer_id) REFERENCES p_customer (id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_address_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
 -- =====================================================================
--- 2) Categories (2레벨 분리: big_categories / small_categories)
+-- 2) Categories
 -- =====================================================================
 CREATE TABLE big_categories
 (
-    id        BINARY(16)   NOT NULL,
-    name      VARCHAR(120) NOT NULL,
-    slug      VARCHAR(140) NOT NULL,
-    p_time_id BINARY(16)   NOT NULL,
+    id         BINARY(16)   NOT NULL,
+    name       VARCHAR(120) NOT NULL,
+    slug       VARCHAR(140) NOT NULL,
+
+    -- Auditing (inline)
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP    NULL,
+
     PRIMARY KEY (id),
-    CONSTRAINT fk_bigcat_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT
+    UNIQUE KEY uk_bigcat_slug (slug)
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
 CREATE TABLE small_categories
 (
-    id        BINARY(16)   NOT NULL,
-    big_id    BINARY(16)   NOT NULL,
-    name      VARCHAR(120) NOT NULL,
-    slug      VARCHAR(140) NOT NULL,
-    p_time_id BINARY(16)   NOT NULL,
+    id         BINARY(16)   NOT NULL,
+    big_id     BINARY(16)   NOT NULL,
+    name       VARCHAR(120) NOT NULL,
+    slug       VARCHAR(140) NOT NULL,
+
+    -- Auditing (inline)
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP    NULL,
+
     PRIMARY KEY (id),
     CONSTRAINT fk_smallcat_big
         FOREIGN KEY (big_id) REFERENCES big_categories (id)
             ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_smallcat_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT
+    UNIQUE KEY uk_smallcat_slug (slug)
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
 -- =====================================================================
--- 3) Stores (브랜드→스토어) + 입점 신청
+-- 3) Stores + Applications
 -- =====================================================================
 CREATE TABLE stores
 (
@@ -167,14 +154,17 @@ CREATE TABLE stores
     name       VARCHAR(120)                           NOT NULL,
     slug       VARCHAR(140)                           NOT NULL,
     status     ENUM ('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
-    p_time_id  BINARY(16)                             NOT NULL,
+
+    -- Auditing (inline)
+    created_at TIMESTAMP                              NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP                              NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP                              NULL,
+
     PRIMARY KEY (id),
     CONSTRAINT fk_stores_manager
         FOREIGN KEY (manager_id) REFERENCES p_manager (id)
             ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_stores_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT
+    UNIQUE KEY uk_stores_slug (slug)
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
@@ -188,7 +178,12 @@ CREATE TABLE store_applications
     reason         VARCHAR(500)                           NULL,
     requested_at   TIMESTAMP                              NOT NULL DEFAULT CURRENT_TIMESTAMP,
     reviewed_at    TIMESTAMP                              NULL,
-    p_time_id      BINARY(16)                             NOT NULL,
+
+    -- Auditing (inline)
+    created_at     TIMESTAMP                              NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     TIMESTAMP                              NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at     TIMESTAMP                              NULL,
+
     PRIMARY KEY (application_id),
     CONSTRAINT fk_storeapps_manager
         FOREIGN KEY (manager_id) REFERENCES p_manager (id)
@@ -198,15 +193,12 @@ CREATE TABLE store_applications
             ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_storeapps_admin
         FOREIGN KEY (reviewed_by) REFERENCES p_admins (id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_storeapps_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
 -- =====================================================================
--- 4) Catalog (상품/변형)  *slug = SEO/URL 식별자 (예: nike-air-max-270-black)
+-- 4) Catalog (Products / Variants)
 -- =====================================================================
 CREATE TABLE products
 (
@@ -214,12 +206,17 @@ CREATE TABLE products
     store_id          BINARY(16)                         NOT NULL,
     small_category_id BINARY(16)                         NOT NULL,
     name              VARCHAR(255)                       NOT NULL,
-    slug              VARCHAR(280)                       NOT NULL, -- 사람/검색엔진 친화 URL 키워드(고유)
+    slug              VARCHAR(280)                       NOT NULL, -- SEO/URL Key
     summary           VARCHAR(500)                       NULL,
     description       MEDIUMTEXT                         NULL,
-    image_url         VARCHAR(1024)                      NOT NULL, -- 단일 대표 이미지
+    image_url         VARCHAR(1024)                      NOT NULL,
     status            ENUM ('DRAFT','ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
-    p_time_id         BINARY(16)                         NOT NULL,
+
+    -- Auditing (inline)
+    created_at        TIMESTAMP                          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at        TIMESTAMP                          NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at        TIMESTAMP                          NULL,
+
     PRIMARY KEY (id),
     CONSTRAINT fk_products_store
         FOREIGN KEY (store_id) REFERENCES stores (id)
@@ -227,9 +224,7 @@ CREATE TABLE products
     CONSTRAINT fk_products_smallcat
         FOREIGN KEY (small_category_id) REFERENCES small_categories (id)
             ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_products_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT
+    UNIQUE KEY uk_products_slug (slug)
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
@@ -241,17 +236,20 @@ CREATE TABLE product_variants
     currency        CHAR(3)                    NOT NULL DEFAULT 'KRW',
     price           DECIMAL(18, 2)             NOT NULL,
     list_price      DECIMAL(18, 2)             NULL,
-    quantity        INT                        NOT NULL DEFAULT 0, -- 재고 수량(공통)
-    attributes_json JSON                       NULL,               -- 의류/식품 등 상이한 속성 임시 보관
+    quantity        INT                        NOT NULL DEFAULT 0,
+    attributes_json JSON                       NULL,
     status          ENUM ('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
-    p_time_id       BINARY(16)                 NOT NULL,
+
+    -- Auditing (inline)
+    created_at      TIMESTAMP                  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP                  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at      TIMESTAMP                  NULL,
+
     PRIMARY KEY (id),
     CONSTRAINT fk_variants_product
         FOREIGN KEY (product_id) REFERENCES products (id)
             ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_variants_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT
+    UNIQUE KEY uk_variants_sku (sku)
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
@@ -262,14 +260,16 @@ CREATE TABLE p_cart
 (
     cart_id     BINARY(16) NOT NULL,
     customer_id BINARY(16) NOT NULL,
-    items_json  JSON       NOT NULL, -- 예: [{"variantId":"0x..","qty":2,"price":12900,"name":"..","sku":"A-001"}]
-    p_time_id   BINARY(16) NOT NULL,
+    items_json  JSON       NOT NULL,
+
+    -- Auditing (inline)
+    created_at  TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at  TIMESTAMP  NULL,
+
     PRIMARY KEY (cart_id),
     CONSTRAINT fk_cart_customer
         FOREIGN KEY (customer_id) REFERENCES p_customer (id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_cart_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
@@ -288,14 +288,17 @@ CREATE TABLE p_orders
     shipping_fee         DECIMAL(18, 2)                                                       NOT NULL DEFAULT 0,
     discount_amount      DECIMAL(18, 2)                                                       NOT NULL DEFAULT 0,
     final_payment_amount DECIMAL(18, 2)                                                       NOT NULL,
-    p_time_id            BINARY(16)                                                           NOT NULL,
+
+    -- Auditing (inline)
+    created_at           TIMESTAMP                                                            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at           TIMESTAMP                                                            NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at           TIMESTAMP                                                            NULL,
+
     PRIMARY KEY (order_id),
     CONSTRAINT fk_orders_customer
         FOREIGN KEY (customer_id) REFERENCES p_customer (id)
             ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_orders_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT
+    UNIQUE KEY uk_orders_order_number (order_number)
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
@@ -310,7 +313,12 @@ CREATE TABLE order_items
     unit_price_snapshot   DECIMAL(18, 2) NOT NULL,
     qty                   INT            NOT NULL,
     line_amount           DECIMAL(18, 2) NOT NULL,
-    p_time_id             BINARY(16)     NOT NULL,
+
+    -- Auditing (inline)
+    created_at            TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at            TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at            TIMESTAMP      NULL,
+
     PRIMARY KEY (order_item_id),
     CONSTRAINT fk_order_items_order
         FOREIGN KEY (order_id) REFERENCES p_orders (order_id)
@@ -320,9 +328,6 @@ CREATE TABLE order_items
             ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_order_items_variant
         FOREIGN KEY (variant_id) REFERENCES product_variants (id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_order_items_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
@@ -339,13 +344,15 @@ CREATE TABLE order_shipping_addresses
     city            VARCHAR(100) NULL,
     state           VARCHAR(100) NULL,
     country_code    CHAR(2)      NOT NULL,
-    p_time_id       BINARY(16)   NOT NULL,
+
+    -- Auditing (inline)
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at      TIMESTAMP    NULL,
+
     PRIMARY KEY (id),
     CONSTRAINT fk_ordaddr_order
         FOREIGN KEY (order_id) REFERENCES p_orders (order_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_ordaddr_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
@@ -366,16 +373,18 @@ CREATE TABLE p_payments
     approved_at       TIMESTAMP                                                             NULL,
     failed_at         TIMESTAMP                                                             NULL,
     failure_reason    VARCHAR(255)                                                          NULL,
-    p_time_id         BINARY(16)                                                            NOT NULL,
+
+    -- Auditing (inline)
+    created_at        TIMESTAMP                                                             NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at        TIMESTAMP                                                             NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at        TIMESTAMP                                                             NULL,
+
     PRIMARY KEY (payment_id),
     CONSTRAINT fk_payments_order
         FOREIGN KEY (order_id) REFERENCES p_orders (order_id)
             ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_payments_customer
         FOREIGN KEY (customer_id) REFERENCES p_customer (id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_payments_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
@@ -389,19 +398,21 @@ CREATE TABLE shipments
     tracking_number VARCHAR(120)                            NULL,
     shipped_at      TIMESTAMP                               NULL,
     delivered_at    TIMESTAMP                               NULL,
-    p_time_id       BINARY(16)                              NOT NULL,
+
+    -- Auditing (inline)
+    created_at      TIMESTAMP                               NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP                               NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at      TIMESTAMP                               NULL,
+
     PRIMARY KEY (shipment_id),
     CONSTRAINT fk_shipments_order
         FOREIGN KEY (order_id) REFERENCES p_orders (order_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_shipments_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
 
 -- =====================================================================
--- 7) Reviews & Recommend/Not-Recommend (리뷰와 별도)
+-- 7) Reviews & Recommend/Not-Recommend
 -- =====================================================================
 CREATE TABLE p_reviews
 (
@@ -410,11 +421,16 @@ CREATE TABLE p_reviews
     customer_id BINARY(16)    NOT NULL,
     product_id  BINARY(16)    NOT NULL,
     variant_id  BINARY(16)    NULL,
-    rating      DECIMAL(2, 1) NOT NULL, -- 0.0 ~ 5.0
+    rating      DECIMAL(2, 1) NOT NULL,
     content     TEXT          NULL,
     images      JSON          NULL,
     is_public   TINYINT(1)    NOT NULL DEFAULT 1,
-    p_time_id   BINARY(16)    NOT NULL,
+
+    -- Auditing (inline)
+    created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at  TIMESTAMP     NULL,
+
     PRIMARY KEY (review_id),
     CONSTRAINT fk_reviews_order
         FOREIGN KEY (order_id) REFERENCES p_orders (order_id)
@@ -427,9 +443,6 @@ CREATE TABLE p_reviews
             ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_reviews_variant
         FOREIGN KEY (variant_id) REFERENCES product_variants (id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_reviews_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
@@ -439,9 +452,14 @@ CREATE TABLE product_recommends
     recommend_id  BINARY(16)         NOT NULL,
     customer_id   BINARY(16)         NOT NULL,
     product_id    BINARY(16)         NOT NULL,
-    order_item_id BINARY(16)         NOT NULL, -- 구매 검증용
-    vote          ENUM ('UP','DOWN') NOT NULL, -- 추천/비추천
-    p_time_id     BINARY(16)         NOT NULL,
+    order_item_id BINARY(16)         NOT NULL,
+    vote          ENUM ('UP','DOWN') NOT NULL,
+
+    -- Auditing (inline)
+    created_at    TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at    TIMESTAMP          NULL,
+
     PRIMARY KEY (recommend_id),
     CONSTRAINT fk_preco_customer
         FOREIGN KEY (customer_id) REFERENCES p_customer (id)
@@ -451,9 +469,8 @@ CREATE TABLE product_recommends
             ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_preco_order_item
         FOREIGN KEY (order_item_id) REFERENCES order_items (order_item_id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_preco_p_time
-        FOREIGN KEY (p_time_id) REFERENCES p_time (p_time_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
+
+SET FOREIGN_KEY_CHECKS = 1;

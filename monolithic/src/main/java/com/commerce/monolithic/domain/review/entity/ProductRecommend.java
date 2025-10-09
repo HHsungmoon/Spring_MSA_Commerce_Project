@@ -2,7 +2,9 @@ package com.commerce.monolithic.domain.review.entity;
 
 import java.util.UUID;
 
-import com.commerce.monolithic.autotime.Time;
+import org.hibernate.annotations.SQLRestriction;
+
+import com.commerce.monolithic.autotime.BaseTimeEntity;
 import com.commerce.monolithic.autotime.UuidBinaryAttributeConverter;
 import com.commerce.monolithic.configenum.GlobalEnum;
 import com.commerce.monolithic.domain.catalogstore.entity.Product;
@@ -21,21 +23,22 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@EqualsAndHashCode(of = "id")
+@SuperBuilder(toBuilder = true)
+@EqualsAndHashCode(of = "id", callSuper = false)
 @Entity
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "product_recommends")
-public class ProductRecommend {
+public class ProductRecommend extends BaseTimeEntity {
 
 	@Id
 	@Convert(converter = UuidBinaryAttributeConverter.class)
@@ -61,8 +64,4 @@ public class ProductRecommend {
 	@Column(name = "vote", length = 8, nullable = false)
 	private GlobalEnum.Vote vote;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "p_time_id", nullable = false,
-		foreignKey = @ForeignKey(name = "fk_preco_p_time"))
-	private Time timeRef;
 }

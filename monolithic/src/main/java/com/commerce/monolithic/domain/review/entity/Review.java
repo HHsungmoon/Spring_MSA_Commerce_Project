@@ -4,9 +4,10 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 
-import com.commerce.monolithic.autotime.Time;
+import com.commerce.monolithic.autotime.BaseTimeEntity;
 import com.commerce.monolithic.autotime.UuidBinaryAttributeConverter;
 import com.commerce.monolithic.domain.catalogstore.entity.Product;
 import com.commerce.monolithic.domain.catalogstore.entity.ProductVariant;
@@ -24,21 +25,22 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@EqualsAndHashCode(of = "id")
+@SuperBuilder(toBuilder = true)
+@EqualsAndHashCode(of = "id", callSuper = false)
 @Entity
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "p_reviews")
-public class Review {
+public class Review extends BaseTimeEntity {
 
 	@Id
 	@Convert(converter = UuidBinaryAttributeConverter.class)
@@ -79,8 +81,4 @@ public class Review {
 	@Column(name = "is_public", nullable = false)
 	private boolean isPublic = true;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "p_time_id", nullable = false,
-		foreignKey = @ForeignKey(name = "fk_reviews_p_time"))
-	private Time timeRef;
 }
