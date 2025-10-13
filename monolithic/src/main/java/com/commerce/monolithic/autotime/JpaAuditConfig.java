@@ -1,4 +1,4 @@
-package com.commerce.monolithic.config;
+package com.commerce.monolithic.autotime;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

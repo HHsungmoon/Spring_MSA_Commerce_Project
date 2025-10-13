@@ -11,21 +11,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.commerce.monolithic.domain.admin.entity.Admin;
 import com.commerce.monolithic.domain.admin.repository.AdminRepository;
+import com.commerce.monolithic.domain.catalogstore.entity.Manager;
+import com.commerce.monolithic.domain.catalogstore.repository.ManagerRepository;
 import com.commerce.monolithic.domain.customer.entity.Customer;
+import com.commerce.monolithic.domain.customer.repository.CustomerRepository;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
 	private final AdminRepository adminRepository;
 	private final ManagerRepository managerRepository;
 	private final CustomerRepository customerRepository;
 
-	/**
-	 * UUID와 사용자 타입("admin", "manager", "user")을 받아 해당 유저 정보를 반환합니다.
-	 */
 	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(UUID id, String type) throws Throwable {
 		switch (type.toLowerCase()) {

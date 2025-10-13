@@ -81,11 +81,6 @@ public class SecurityConfig {
 				})
 			);
 
-		//		// ✅ 테스트가 아닐 때만 필터 등록
-		//		if (!isTestProfile) {
-		//			http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-		//		}
-
 		return http.build();
 	}
 

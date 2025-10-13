@@ -24,11 +24,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class JwtTokenProvider {
 
-	/*
-	 * 2025/04/13 - 기본적인 JWT 기능만 구현
-	 * 추가 - Refresh 토큰, 로그아웃 토큰 블랙리스트 처리, 토큰 만료 시간 확인 메서드
-	 * */
-
 	private final UserDetailsService userDetailsService;  // ← 추가
 
 	private final Key secretKey;
@@ -39,7 +34,7 @@ public class JwtTokenProvider {
 
 	public JwtTokenProvider(@Value("${jwt.secret}") String secret,
 		@Qualifier("customUserDetailsService") UserDetailsService userDetailsService) {
-		this.secretKey = Keys.hmacShaKeyFor(secret.getBytes()); // 최신 Key 생성 방식
+		this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
 		this.userDetailsService = userDetailsService;
 	}
 
@@ -50,7 +45,7 @@ public class JwtTokenProvider {
 
 		return Jwts.builder()
 			.setSubject(String.valueOf(id))
-			.claim("type", type)  // user,manager Type도 추가로 저장
+			.claim("type", type)
 			.setIssuedAt(now)
 			.setExpiration(expiryDate)
 			.signWith(secretKey)
@@ -63,7 +58,7 @@ public class JwtTokenProvider {
 
 		return Jwts.builder()
 			.setSubject(String.valueOf(id))
-			.claim("type", role)      // RefreshToken에도 동일한 키("type")로 역할 정보 삽입
+			.claim("type", role)
 			.setIssuedAt(now)
 			.setExpiration(expiryDate)
 			.signWith(secretKey, SignatureAlgorithm.HS256)

@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 import com.commerce.monolithic.autotime.SoftDeleteRepository;
-import com.commerce.monolithic.orderpayship.entity.OrderShippingAddress;
+import com.commerce.monolithic.domain.orderpayship.entity.OrderShippingAddress;
 
 @Repository
 public interface OrderShippingAddressRepository extends SoftDeleteRepository<OrderShippingAddress, UUID> {

@@ -325,9 +325,6 @@ CREATE TABLE order_items
             ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_order_items_product
         FOREIGN KEY (product_id) REFERENCES products (id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_order_items_variant
-        FOREIGN KEY (variant_id) REFERENCES product_variants (id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
@@ -440,9 +437,6 @@ CREATE TABLE p_reviews
             ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_reviews_product
         FOREIGN KEY (product_id) REFERENCES products (id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_reviews_variant
-        FOREIGN KEY (variant_id) REFERENCES product_variants (id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;
@@ -466,9 +460,6 @@ CREATE TABLE product_recommends
             ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_preco_product
         FOREIGN KEY (product_id) REFERENCES products (id)
-            ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_preco_order_item
-        FOREIGN KEY (order_item_id) REFERENCES order_items (order_item_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB
   ROW_FORMAT = DYNAMIC;

@@ -6,12 +6,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-import profect.eatcloud.domain.customer.entity.Customer;
-import profect.eatcloud.domain.customer.repository.CustomerRepository;
+import com.commerce.monolithic.domain.customer.entity.Customer;
+import com.commerce.monolithic.domain.customer.repository.CustomerRepository;
+
+import lombok.AllArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class AuthenticationHelper {
 
 	private final CustomerRepository customerRepository;
