@@ -1,4 +1,4 @@
-package com.commerce.monolithic.auth.dto;
+package com.commerce.monolithic.domain.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,10 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignupRequestDto {
+public class LoginRequestDto {
 	private String email;
 	private String password;
-	private String name;
-	private String nickname;
-	private String phone;
 }

@@ -1,4 +1,4 @@
-package com.commerce.monolithic.auth.service;
+package com.commerce.monolithic.domain.auth.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

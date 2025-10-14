@@ -1,4 +1,4 @@
-package com.commerce.monolithic.auth.response;
+package com.commerce.monolithic.domain.auth.response;
 
 import com.commerce.monolithic.autoresponse.ApiResponseStatus;
 import com.commerce.monolithic.autoresponse.success.SuccessCode;

@@ -1,4 +1,4 @@
-package com.commerce.monolithic.auth;
+package com.commerce.monolithic.domain.auth;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.commerce.monolithic.auth.dto.LoginRequestDto;
-import com.commerce.monolithic.auth.dto.LoginResponseDto;
-import com.commerce.monolithic.auth.dto.SignupRequestDto;
-import com.commerce.monolithic.auth.response.AuthSuccessCode;
-import com.commerce.monolithic.auth.service.AuthService;
-import com.commerce.monolithic.auth.service.RefreshTokenService;
 import com.commerce.monolithic.autoresponse.ApiResponse;
+import com.commerce.monolithic.domain.auth.dto.LoginRequestDto;
+import com.commerce.monolithic.domain.auth.dto.LoginResponseDto;
+import com.commerce.monolithic.domain.auth.dto.SignupRequestDto;
+import com.commerce.monolithic.domain.auth.response.AuthSuccessCode;
+import com.commerce.monolithic.domain.auth.service.AuthService;
+import com.commerce.monolithic.domain.auth.service.RefreshTokenService;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
