@@ -35,7 +35,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 		String path = request.getRequestURI();
 
 		// 로그인/회원가입, 구글 로그인 콜백 등은 JWT 인증 필터 제외
-		return path.startsWith("/auth/login") ||
+		return path.startsWith("/auth/auth") ||
 			path.startsWith("/auth/register") ||
 			path.startsWith("/auth/google") ||
 			path.startsWith("/oauth2/") ||

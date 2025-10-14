@@ -5,13 +5,13 @@ import org.springframework.http.HttpStatus;
 import com.commerce.monolithic.autoresponse.ApiResponseStatus;
 
 public interface SuccessCode {
-	String code();                 // 예: "USER-0001"
+	String getCode();
 
-	String message();              // null이면 ApiResponseStatus.display 사용
+	String getMessage();
 
-	ApiResponseStatus status();    // OK/CREATED 등
+	ApiResponseStatus getStatus();
 
 	default HttpStatus httpStatus() {
-		return status().getHttpStatus();
+		return getStatus().getHttpStatus();
 	}
 }
