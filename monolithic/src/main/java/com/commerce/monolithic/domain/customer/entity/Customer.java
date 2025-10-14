@@ -69,7 +69,6 @@ public class Customer extends BaseTimeEntity {
 	@PrePersist
 	private void setIdIfNull() {
 		if (this.id == null) {
-			// v7 (time-ordered) UUID
 			this.id = UuidCreator.getTimeOrderedEpoch();
 		}
 		if (this.gender == null) {

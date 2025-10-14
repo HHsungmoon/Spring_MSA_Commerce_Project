@@ -6,11 +6,13 @@ import org.hibernate.annotations.SQLRestriction;
 
 import com.commerce.monolithic.autotime.BaseTimeEntity;
 import com.commerce.monolithic.autotime.UuidBinaryAttributeConverter;
+import com.github.f4b6a3.uuid.UuidCreator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -41,4 +43,10 @@ public class BigCategory extends BaseTimeEntity {
 	@Column(name = "slug", length = 140, nullable = false)
 	private String slug;
 
+	@PrePersist
+	private void setIdIfNull() {
+		if (this.id == null) {
+			this.id = UuidCreator.getTimeOrderedEpoch();
+		}
+	}
 }

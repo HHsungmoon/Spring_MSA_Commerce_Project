@@ -10,6 +10,7 @@ import com.commerce.monolithic.configenum.GlobalEnum;
 import com.commerce.monolithic.domain.catalogstore.entity.Product;
 import com.commerce.monolithic.domain.customer.entity.Customer;
 import com.commerce.monolithic.domain.orderpayship.entity.OrderItem;
+import com.github.f4b6a3.uuid.UuidCreator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -21,6 +22,7 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -64,4 +66,10 @@ public class ProductRecommend extends BaseTimeEntity {
 	@Column(name = "vote", length = 8, nullable = false)
 	private GlobalEnum.Vote vote;
 
+	@PrePersist
+	private void setIdIfNull() {
+		if (this.id == null) {
+			this.id = UuidCreator.getTimeOrderedEpoch();
+		}
+	}
 }

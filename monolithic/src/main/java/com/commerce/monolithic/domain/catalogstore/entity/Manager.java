@@ -7,6 +7,7 @@ import org.hibernate.annotations.SQLRestriction;
 import com.commerce.monolithic.autotime.BaseTimeEntity;
 import com.commerce.monolithic.autotime.UuidBinaryAttributeConverter;
 import com.commerce.monolithic.configenum.GlobalEnum;
+import com.github.f4b6a3.uuid.UuidCreator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -14,6 +15,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -57,4 +59,13 @@ public class Manager extends BaseTimeEntity {
 	@Column(name = "status", length = 16, nullable = false)
 	private GlobalEnum.CommonStatus status; // ACTIVE/INACTIVE/BANNED 같은 공통 enum 가정
 
+	@PrePersist
+	private void setIdIfNull() {
+		if (this.id == null) {
+			this.id = UuidCreator.getTimeOrderedEpoch();
+		}
+		if (this.status == null) {
+			this.status = GlobalEnum.CommonStatus.ACTIVE;
+		}
+	}
 }
