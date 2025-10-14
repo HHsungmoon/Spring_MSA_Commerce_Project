@@ -1,4 +1,4 @@
-package com.commerce.monolithic.auth.dto;
+package com.commerce.monolithic.domain.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

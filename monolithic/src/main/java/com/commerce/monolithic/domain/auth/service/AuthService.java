@@ -1,4 +1,4 @@
-package com.commerce.monolithic.auth.service;
+package com.commerce.monolithic.domain.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -8,14 +8,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.commerce.monolithic.auth.dto.LoginRequestDto;
-import com.commerce.monolithic.auth.dto.LoginResponseDto;
-import com.commerce.monolithic.auth.dto.SignupRedisData;
-import com.commerce.monolithic.auth.dto.SignupRequestDto;
-import com.commerce.monolithic.auth.response.AuthErrorCode;
 import com.commerce.monolithic.autoresponse.error.BusinessException;
 import com.commerce.monolithic.domain.admin.entity.Admin;
 import com.commerce.monolithic.domain.admin.repository.AdminRepository;
+import com.commerce.monolithic.domain.auth.dto.LoginRequestDto;
+import com.commerce.monolithic.domain.auth.dto.LoginResponseDto;
+import com.commerce.monolithic.domain.auth.dto.SignupRedisData;
+import com.commerce.monolithic.domain.auth.dto.SignupRequestDto;
+import com.commerce.monolithic.domain.auth.response.AuthErrorCode;
 import com.commerce.monolithic.domain.catalogstore.entity.Manager;
 import com.commerce.monolithic.domain.catalogstore.repository.ManagerRepository;
 import com.commerce.monolithic.domain.customer.entity.Customer;

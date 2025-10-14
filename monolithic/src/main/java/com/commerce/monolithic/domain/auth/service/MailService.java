@@ -1,4 +1,4 @@
-package com.commerce.monolithic.auth.service;
+package com.commerce.monolithic.domain.auth.service;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
