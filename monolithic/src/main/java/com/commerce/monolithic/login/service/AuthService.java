@@ -2,9 +2,7 @@ package com.commerce.monolithic.login.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,7 +30,7 @@ public class AuthService {
 	private final ManagerRepository managerRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
-	private final RedisTemplate<String, Object> redisTemplate;
+	//private final RedisTemplate<String, Object> redisTemplate;
 	private final MailService mailService;
 	private final RefreshTokenService refreshTokenService;
 
@@ -110,9 +108,10 @@ public class AuthService {
 
 		// Redis에 저장 (key: "signup:{email}", value: SignupRequestDto+코드)
 		SignupRedisData data = new SignupRedisData(req, verificationCode);
-		redisTemplate.opsForValue().set("signup:" + req.getEmail(), data, 10, TimeUnit.MINUTES); // 10분 유효
+		//redisTemplate.opsForValue().set("signup:" + req.getEmail(), data, 10, TimeUnit.MINUTES); // 10분 유효
 	}
 
+	/*
 	public void confirmEmail(String email, String code) {
 		String key = "signup:" + email;
 		SignupRedisData data = (SignupRedisData)redisTemplate.opsForValue().get(key);
@@ -137,6 +136,7 @@ public class AuthService {
 		// Redis에서 제거
 		redisTemplate.delete(key);
 	}
+	 */
 
 	public void signupWithoutEmailVerification(SignupRequestDto req) {
 		if (customerRepository.findByEmail(req.getEmail()).isPresent()) {

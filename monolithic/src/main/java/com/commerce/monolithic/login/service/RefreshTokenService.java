@@ -3,9 +3,7 @@ package com.commerce.monolithic.login.service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.commerce.monolithic.domain.admin.entity.Admin;
@@ -15,23 +13,18 @@ import com.commerce.monolithic.domain.catalogstore.repository.ManagerRepository;
 import com.commerce.monolithic.domain.customer.entity.Customer;
 import com.commerce.monolithic.domain.customer.repository.CustomerRepository;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class RefreshTokenService {
 
-	private final RedisTemplate<String, Object> redisTemplate;
+	//private final RedisTemplate<String, Object> redisTemplate;
 	private final AdminRepository adminRepository;
 	private final ManagerRepository managerRepository;
 	private final CustomerRepository customerRepository;
 
 	private static final String BLACKLIST_PREFIX = "blacklist:";
-
-	public RefreshTokenService(RedisTemplate<String, Object> redisTemplate, AdminRepository adminRepository,
-		ManagerRepository managerRepository, CustomerRepository customerRepository) {
-		this.redisTemplate = redisTemplate;
-		this.adminRepository = adminRepository;
-		this.managerRepository = managerRepository;
-		this.customerRepository = customerRepository;
-	}
 
 	private String createKey(Object user) {
 		String prefix;
@@ -65,9 +58,10 @@ public class RefreshTokenService {
 	public void saveOrUpdateToken(Object user, String refreshToken, LocalDateTime expiryDateTime) {
 		String key = createKey(user);
 		long duration = Duration.between(LocalDateTime.now(), expiryDateTime).getSeconds();
-		redisTemplate.opsForValue().set(key, refreshToken, duration, TimeUnit.SECONDS);
+		//redisTemplate.opsForValue().set(key, refreshToken, duration, TimeUnit.SECONDS);
 	}
 
+	/*
 	public boolean isValid(Object user, String token) {
 		String key = createKey(user);
 		Object stored = redisTemplate.opsForValue().get(key);
@@ -79,6 +73,7 @@ public class RefreshTokenService {
 		return stored != null && stored.equals(token);
 	}
 
+
 	public void addToBlacklist(String token, long expirationSeconds) {
 		redisTemplate.opsForValue().set(BLACKLIST_PREFIX + token, "blacklisted", expirationSeconds, TimeUnit.SECONDS);
 	}
@@ -87,4 +82,5 @@ public class RefreshTokenService {
 		String key = createKey(user);
 		redisTemplate.delete(key);
 	}
+	*/
 }
