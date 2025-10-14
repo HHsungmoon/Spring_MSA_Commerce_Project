@@ -1,4 +1,4 @@
-package com.commerce.monolithic.login.dto;
+package com.commerce.monolithic.auth.dto;
 
 import lombok.Getter;
 

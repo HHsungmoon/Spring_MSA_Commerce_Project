@@ -1,4 +1,4 @@
-package com.commerce.monolithic.login.service;
+package com.commerce.monolithic.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -8,15 +8,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.commerce.monolithic.auth.dto.LoginRequestDto;
+import com.commerce.monolithic.auth.dto.LoginResponseDto;
+import com.commerce.monolithic.auth.dto.SignupRedisData;
+import com.commerce.monolithic.auth.dto.SignupRequestDto;
+import com.commerce.monolithic.auth.response.AuthErrorCode;
+import com.commerce.monolithic.autoresponse.error.BusinessException;
 import com.commerce.monolithic.domain.admin.entity.Admin;
 import com.commerce.monolithic.domain.admin.repository.AdminRepository;
 import com.commerce.monolithic.domain.catalogstore.entity.Manager;
 import com.commerce.monolithic.domain.catalogstore.repository.ManagerRepository;
 import com.commerce.monolithic.domain.customer.entity.Customer;
 import com.commerce.monolithic.domain.customer.repository.CustomerRepository;
-import com.commerce.monolithic.login.dto.LoginResponseDto;
-import com.commerce.monolithic.login.dto.SignupRedisData;
-import com.commerce.monolithic.login.dto.SignupRequestDto;
 import com.commerce.monolithic.security.JwtTokenProvider;
 
 import lombok.AllArgsConstructor;
@@ -35,13 +38,13 @@ public class AuthService {
 	private final RefreshTokenService refreshTokenService;
 
 	// 1) 로그인
-	public LoginResponseDto login(String email, String password) {
+	public LoginResponseDto login(LoginRequestDto data) {
 		// 1) Admin 먼저 조회
-		Admin admin = adminRepository.findByEmail(email)
+		Admin admin = adminRepository.findByEmail(data.getEmail())
 			.orElse(null);
 		if (admin != null) {
-			if (!passwordEncoder.matches(password, admin.getPassword())) {
-				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+			if (!passwordEncoder.matches(data.getPassword(), admin.getPassword())) {
+				throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
 			}
 			// Admin 전용 토큰(리프레시 토큰은 사용하지 않음)
 			String accessToken = jwtTokenProvider.createToken(admin.getId(), "admin");
@@ -49,11 +52,11 @@ public class AuthService {
 		}
 
 		// 2) Manager 조회
-		Manager manager = managerRepository.findByEmail(email)
+		Manager manager = managerRepository.findByEmail(data.getEmail())
 			.orElse(null);
 		if (manager != null) {
-			if (!passwordEncoder.matches(password, manager.getPassword())) {
-				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+			if (!passwordEncoder.matches(data.getPassword(), manager.getPassword())) {
+				throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
 			}
 			// 방문 로그 기록 등 필요시 추가
 			// User/Manager용 Access + Refresh 토큰 생성
@@ -65,12 +68,12 @@ public class AuthService {
 			return new LoginResponseDto(accessToken, refreshToken, "manager");
 		}
 
-		// 3) User 조회
-		Customer customer = customerRepository.findByEmail(email)
-			.orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다: " + email));
+		// 3) Customer 조회
+		Customer customer = customerRepository.findByEmail(data.getEmail())
+			.orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다: " + data.getEmail()));
 
-		if (!passwordEncoder.matches(password, customer.getPassword())) {
-			throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+		if (!passwordEncoder.matches(data.getPassword(), customer.getPassword())) {
+			throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
 		}
 
 		// 방문 로그 기록
@@ -90,7 +93,7 @@ public class AuthService {
 	// 2) 회원가입 (Customer 예시)
 	public void tempSignup(SignupRequestDto req) {
 		if (customerRepository.findByEmail(req.getEmail()).isPresent()) {
-			throw new RuntimeException("이미 존재하는 이메일입니다.");
+			throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
 		}
 
 		String verificationCode = UUID.randomUUID().toString().substring(0, 6); // 간단한 코드
@@ -103,7 +106,7 @@ public class AuthService {
 		try {
 			mailService.sendMail(req.getEmail(), subject, text);
 		} catch (MailException e) {
-			throw new RuntimeException("이메일 전송에 실패했습니다. 다시 시도해주세요.", e);
+			throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
 		}
 
 		// Redis에 저장 (key: "signup:{email}", value: SignupRequestDto+코드)
@@ -111,75 +114,18 @@ public class AuthService {
 		//redisTemplate.opsForValue().set("signup:" + req.getEmail(), data, 10, TimeUnit.MINUTES); // 10분 유효
 	}
 
-	/*
-	public void confirmEmail(String email, String code) {
-		String key = "signup:" + email;
-		SignupRedisData data = (SignupRedisData)redisTemplate.opsForValue().get(key);
-
-		if (data == null) {
-			throw new RuntimeException("만료되었거나 존재하지 않는 인증 요청입니다.");
-		}
-
-		if (!data.getCode().equals(code)) {
-			throw new RuntimeException("인증 코드가 일치하지 않습니다.");
-		}
-
-		// 최종 가입 처리
-		Customer customer = Customer.builder()
-			.email(data.getRequest().getEmail())
-			.password(passwordEncoder.encode(data.getRequest().getPassword()))
-			.name(data.getRequest().getName())
-			.nickname(data.getRequest().getNickname())
-			.build();
-		customerRepository.save(customer);
-
-		// Redis에서 제거
-		redisTemplate.delete(key);
-	}
-	 */
-
-	public void signupWithoutEmailVerification(SignupRequestDto req) {
+	public void signup(SignupRequestDto req) {
 		if (customerRepository.findByEmail(req.getEmail()).isPresent()) {
-			throw new RuntimeException("이미 존재하는 이메일입니다.");
+			throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
 		}
-		Customer customer = Customer.builder()
+
+		Customer user = Customer.builder()
 			.email(req.getEmail())
 			.password(passwordEncoder.encode(req.getPassword()))
 			.name(req.getName())
-			.nickname(req.getNickname())
 			.build();
-		customerRepository.save(customer);
+
+		customerRepository.save(user);
 	}
 
-	public void changePassword(String userId, String currentPassword, String newPassword) {
-		Admin admin = adminRepository.findById(UUID.fromString(userId)).orElse(null);
-		if (admin != null) {
-			if (!passwordEncoder.matches(currentPassword, admin.getPassword())) {
-				throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
-			}
-			admin.setPassword(passwordEncoder.encode(newPassword));
-			adminRepository.save(admin);
-			return;
-		}
-
-		Manager manager = managerRepository.findById(UUID.fromString(userId)).orElse(null);
-		if (manager != null) {
-			if (!passwordEncoder.matches(currentPassword, manager.getPassword())) {
-				throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
-			}
-			manager.setPassword(passwordEncoder.encode(newPassword));
-			managerRepository.save(manager);
-			return;
-		}
-
-		Customer customer = customerRepository.findById(UUID.fromString(userId))
-			.orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userId));
-
-		if (!passwordEncoder.matches(currentPassword, customer.getPassword())) {
-			throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
-		}
-
-		customer.setPassword(passwordEncoder.encode(newPassword));
-		customerRepository.save(customer);
-	}
 }

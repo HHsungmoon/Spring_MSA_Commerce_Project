@@ -88,6 +88,9 @@ dependencies {
     annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+
+    // 13. UUID7 사용을 위해
+    implementation "com.github.f4b6a3:uuid-creator:5.3.5"
 }
 
 tasks.named('test') {

@@ -5,13 +5,14 @@ import org.springframework.http.HttpStatus;
 import com.commerce.monolithic.autoresponse.ApiResponseStatus;
 
 public interface ErrorCode {
-	String code();
+	String getCode();
 
-	String message();
+	String getMessage();           // nullable; blank면 status.display 사용
 
-	ApiResponseStatus status();
+	ApiResponseStatus getStatus();
 
 	default HttpStatus httpStatus() {
-		return status().getHttpStatus();
+		return getStatus().getHttpStatus();
 	}
 }
+
