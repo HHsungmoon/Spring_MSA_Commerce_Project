@@ -1,4 +1,4 @@
-package com.commerce.monolithic.domain.catalogstore.entity;
+package com.commerce.monolithic.domain.store.entity;
 
 import java.math.BigDecimal;
 import java.util.UUID;

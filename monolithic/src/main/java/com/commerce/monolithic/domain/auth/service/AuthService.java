@@ -16,10 +16,10 @@ import com.commerce.monolithic.domain.auth.dto.LoginResponseDto;
 import com.commerce.monolithic.domain.auth.dto.SignupRedisData;
 import com.commerce.monolithic.domain.auth.dto.SignupRequestDto;
 import com.commerce.monolithic.domain.auth.response.AuthErrorCode;
-import com.commerce.monolithic.domain.catalogstore.entity.Manager;
-import com.commerce.monolithic.domain.catalogstore.repository.ManagerRepository;
 import com.commerce.monolithic.domain.customer.entity.Customer;
 import com.commerce.monolithic.domain.customer.repository.CustomerRepository;
+import com.commerce.monolithic.domain.store.entity.Manager;
+import com.commerce.monolithic.domain.store.repository.ManagerRepository;
 import com.commerce.monolithic.security.JwtTokenProvider;
 
 import lombok.AllArgsConstructor;

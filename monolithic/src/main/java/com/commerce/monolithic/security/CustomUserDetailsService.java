@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.commerce.monolithic.domain.admin.entity.Admin;
 import com.commerce.monolithic.domain.admin.repository.AdminRepository;
-import com.commerce.monolithic.domain.catalogstore.entity.Manager;
-import com.commerce.monolithic.domain.catalogstore.repository.ManagerRepository;
 import com.commerce.monolithic.domain.customer.entity.Customer;
 import com.commerce.monolithic.domain.customer.repository.CustomerRepository;
+import com.commerce.monolithic.domain.store.entity.Manager;
+import com.commerce.monolithic.domain.store.repository.ManagerRepository;
 
 import lombok.AllArgsConstructor;
 

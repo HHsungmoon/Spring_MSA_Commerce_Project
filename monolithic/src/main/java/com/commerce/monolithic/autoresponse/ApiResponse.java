@@ -18,7 +18,7 @@ public final class ApiResponse<T> {
 	private final int status;      // HTTP code
 	private final String code;     // business code
 	private final String message;  // final message shown to client
-	private final T data;          // null on error
+	private final T data;          // null on response
 
 	// Success
 	public static <T> ResponseEntity<ApiResponse<T>> success(SuccessCode sc, T data) {
@@ -28,6 +28,15 @@ public final class ApiResponse<T> {
 
 		return ResponseEntity.status(sc.httpStatus())
 			.body(new ApiResponse<>(true, sc.httpStatus().value(), sc.getCode(), msg, data));
+	}
+
+	public static <T> ResponseEntity<ApiResponse<T>> success(SuccessCode sc) {
+		String msg = (sc.getMessage() == null || sc.getMessage().isBlank())
+			? sc.getStatus().getDisplay()
+			: sc.getMessage();
+
+		return ResponseEntity.status(sc.httpStatus())
+			.body(new ApiResponse<>(true, sc.httpStatus().value(), sc.getCode(), msg, null));
 	}
 
 	// Error

@@ -33,7 +33,7 @@ public class SecurityConfig {
 	// API endponit 허용할거 작성.
 	public static final String[] PERMIT_URLS = {
 		// 기본/Swagger
-		"/error",
+		"/response",
 		"/favicon.ico",
 		"/v3/api-docs",
 		"/swagger-ui/index.html",
@@ -74,12 +74,12 @@ public class SecurityConfig {
 				.authenticationEntryPoint((_, response, _) -> {
 					response.setStatus(HttpStatus.UNAUTHORIZED.value());
 					response.setContentType("application/json");
-					response.getWriter().write("{\"error\": \"Unauthorized access\"}");
+					response.getWriter().write("{\"response\": \"Unauthorized access\"}");
 				})
 				.accessDeniedHandler((req, res, accessDeniedEx) -> {
 					res.setStatus(HttpStatus.FORBIDDEN.value());
 					res.setContentType("application/json");
-					res.getWriter().write("{\"error\": \"Forbidden: 권한이 없습니다.\"}");
+					res.getWriter().write("{\"response\": \"Forbidden: 권한이 없습니다.\"}");
 				})
 			);
 

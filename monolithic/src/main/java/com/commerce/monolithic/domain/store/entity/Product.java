@@ -1,4 +1,4 @@
-package com.commerce.monolithic.domain.catalogstore.entity;
+package com.commerce.monolithic.domain.store.entity;
 
 import java.util.UUID;
 
@@ -6,15 +6,19 @@ import org.hibernate.annotations.SQLRestriction;
 
 import com.commerce.monolithic.autotime.BaseTimeEntity;
 import com.commerce.monolithic.autotime.UuidBinaryAttributeConverter;
+import com.commerce.monolithic.configenum.GlobalEnum;
 import com.github.f4b6a3.uuid.UuidCreator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -33,8 +37,8 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(of = "id", callSuper = false)
 @Entity
 @SQLRestriction("deleted_at IS NULL")
-@Table(name = "small_categories")
-public class SmallCategory extends BaseTimeEntity {
+@Table(name = "products")
+public class Product extends BaseTimeEntity {
 
 	@Id
 	@Convert(converter = UuidBinaryAttributeConverter.class)
@@ -42,15 +46,34 @@ public class SmallCategory extends BaseTimeEntity {
 	private UUID id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "big_id", nullable = false,
-		foreignKey = @ForeignKey(name = "fk_smallcat_big"))
-	private BigCategory bigCategory;
+	@JoinColumn(name = "store_id", nullable = false,
+		foreignKey = @ForeignKey(name = "fk_products_store"))
+	private Store store;
 
-	@Column(name = "name", length = 120, nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "small_category_id", nullable = false,
+		foreignKey = @ForeignKey(name = "fk_products_smallcat"))
+	private SmallCategory smallCategory;
+
+	@Column(name = "name", length = 255, nullable = false)
 	private String name;
 
-	@Column(name = "slug", length = 140, nullable = false)
-	private String slug;
+	@Column(name = "slug", length = 280, nullable = false)
+	private String slug; // SEO/URL 식별자
+
+	@Column(name = "summary", length = 500)
+	private String summary;
+
+	@Lob
+	@Column(name = "description")
+	private String description;
+
+	@Column(name = "image_url", length = 1024, nullable = false)
+	private String imageUrl;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", length = 16, nullable = false)
+	private GlobalEnum.ProductStatus status; // DRAFT/ACTIVE/INACTIVE
 
 	@PrePersist
 	private void setIdIfNull() {

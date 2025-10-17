@@ -7,8 +7,8 @@ import org.hibernate.annotations.SQLRestriction;
 
 import com.commerce.monolithic.autotime.BaseTimeEntity;
 import com.commerce.monolithic.autotime.UuidBinaryAttributeConverter;
-import com.commerce.monolithic.domain.catalogstore.entity.Product;
-import com.commerce.monolithic.domain.catalogstore.entity.ProductVariant;
+import com.commerce.monolithic.domain.store.entity.Product;
+import com.commerce.monolithic.domain.store.entity.ProductVariant;
 import com.github.f4b6a3.uuid.UuidCreator;
 
 import jakarta.persistence.Column;
