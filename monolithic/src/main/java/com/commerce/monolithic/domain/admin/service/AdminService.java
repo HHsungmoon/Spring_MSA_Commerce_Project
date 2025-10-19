@@ -20,7 +20,7 @@ public class AdminService {
 
 	@Transactional(readOnly = true)
 	public AdminDataResponse getMe(UUID adminId) {
-		Admin admin = adminBase.getAdminOrThrow(adminId);
+		Admin admin = adminBase.getAdmin(adminId);
 		return AdminDataResponse.from(admin);
 	}
 }

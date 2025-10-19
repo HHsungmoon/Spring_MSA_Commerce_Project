@@ -1,6 +1,6 @@
 package com.commerce.monolithic.domain.admin.entity;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.SQLRestriction;
@@ -48,8 +48,7 @@ public class StoreApplication extends BaseTimeEntity {
 	private UUID id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "manager_id", nullable = false,
-		foreignKey = @ForeignKey(name = "fk_storeapps_manager"))
+	@JoinColumn(name = "manager_id", nullable = false, foreignKey = @ForeignKey(name = "fk_storeapps_manager"))
 	private Manager manager;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -59,11 +58,10 @@ public class StoreApplication extends BaseTimeEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", length = 16, nullable = false)
-	private StoreStatus status; // PENDING/APPROVED/REJECTED
+	private StoreStatus status;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "reviewed_by",
-		foreignKey = @ForeignKey(name = "fk_storeapps_admin"))
+	@JoinColumn(name = "reviewed_by", foreignKey = @ForeignKey(name = "fk_storeapps_admin"))
 	private Admin reviewedBy;
 
 	/** 반려/메모 사유 */
@@ -71,10 +69,10 @@ public class StoreApplication extends BaseTimeEntity {
 	private String reason;
 
 	@Column(name = "requested_at", nullable = false)
-	private Instant requestedAt;
+	private LocalDateTime requestedAt;
 
 	@Column(name = "reviewed_at")
-	private Instant reviewedAt;
+	private LocalDateTime reviewedAt;
 
 	@PrePersist
 	private void setIdIfNull() {

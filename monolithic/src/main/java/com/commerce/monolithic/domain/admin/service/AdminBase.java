@@ -31,13 +31,15 @@ public class AdminBase {
 	}
 
 	@Transactional(readOnly = true)
-	public Admin getAdminOrThrow(UUID adminId) {
+	public Admin getAdmin(UUID adminId) {
 		return adminRepository.findById(adminId)
 			.orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
 	}
 
 	@Transactional(readOnly = true)
-	public Admin getAdminOrThrow(UserDetails userDetails) {
-		return getAdminOrThrow(requireAdminId(userDetails));
+	public Admin getAdmin(UserDetails userDetails) {
+		UUID adminId = requireAdminId(userDetails);
+		return adminRepository.findById(adminId)
+			.orElseThrow(() -> new BusinessException(AdminErrorCode.ADMIN_NOT_FOUND));
 	}
 }
