@@ -1,6 +1,5 @@
 package com.commerce.monolithic.domain.orderpayship.entity;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import org.hibernate.annotations.SQLRestriction;
@@ -43,35 +42,43 @@ public class Order extends BaseTimeEntity {
 
 	@Id
 	@Convert(converter = UuidBinaryAttributeConverter.class)
-	@Column(name = "order_id", columnDefinition = "BINARY(16)")
+	@Column(name = "order_id", columnDefinition = "BINARY(16)", nullable = false)
 	private UUID id;
-
-	@Column(name = "order_number", length = 60, nullable = false)
-	private String orderNumber;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "customer_id", nullable = false,
 		foreignKey = @ForeignKey(name = "fk_orders_customer"))
 	private Customer customer;
 
+	@Column(name = "order_number", length = 60, nullable = false, unique = true)
+	private String orderNumber;
+
 	@Enumerated(EnumType.STRING)
-	@Column(name = "order_status", length = 16, nullable = false)
-	private OrderStatus orderStatus;
+	@Column(name = "order_status", nullable = false)
+	private OrderStatus orderStatus = OrderStatus.PENDING;
 
-	@Column(name = "order_type", length = 16, nullable = false)
-	private String orderType = "GENERAL";
+	// 금액: KRW "원" 단위 정수
+	@Column(name = "subtotal_amount", nullable = false)
+	private Integer subtotalAmount = 0;
 
-	@Column(name = "subtotal_amount", precision = 18, scale = 2, nullable = false)
-	private BigDecimal subtotalAmount;
+	@Column(name = "shipping_fee", nullable = false)
+	private Integer shippingFee = 0;
 
-	@Column(name = "shipping_fee", precision = 18, scale = 2, nullable = false)
-	private BigDecimal shippingFee;
+	@Column(name = "discount_amount", nullable = false)
+	private Integer discountAmount = 0;
 
-	@Column(name = "discount_amount", precision = 18, scale = 2, nullable = false)
-	private BigDecimal discountAmount;
+	@Column(name = "final_payment_amount", nullable = false)
+	private Integer finalPaymentAmount;
 
-	@Column(name = "final_payment_amount", precision = 18, scale = 2, nullable = false)
-	private BigDecimal finalPaymentAmount;
+	// 배송지 스냅샷
+	@Column(name = "recipient_name", length = 100, nullable = false)
+	private String recipientName;
+
+	@Column(name = "recipient_phone", length = 30, nullable = false)
+	private String recipientPhone;
+
+	@Column(name = "address", length = 255, nullable = false)
+	private String address;
 
 	@PrePersist
 	private void setIdIfNull() {

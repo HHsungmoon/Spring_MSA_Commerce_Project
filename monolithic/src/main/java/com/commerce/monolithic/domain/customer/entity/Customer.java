@@ -58,6 +58,9 @@ public class Customer extends BaseTimeEntity {
 	@Column(name = "age")
 	private Short age;
 
+	@Column(name = "address", length = 255, nullable = false)
+	private String address;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "gender", length = 16, nullable = false)
 	private GlobalEnum.Gender gender;

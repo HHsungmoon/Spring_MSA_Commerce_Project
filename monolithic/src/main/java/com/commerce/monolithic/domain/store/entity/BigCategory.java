@@ -40,9 +40,6 @@ public class BigCategory extends BaseTimeEntity {
 	@Column(name = "name", length = 120, nullable = false)
 	private String name;
 
-	@Column(name = "slug", length = 140, nullable = false)
-	private String slug;
-
 	@PrePersist
 	private void setIdIfNull() {
 		if (this.id == null) {

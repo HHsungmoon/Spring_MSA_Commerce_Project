@@ -1,12 +1,8 @@
 package com.commerce.monolithic.domain.orderpayship.entity;
 
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
-import org.hibernate.type.SqlTypes;
 
 import com.commerce.monolithic.autotime.BaseTimeEntity;
 import com.commerce.monolithic.autotime.UuidBinaryAttributeConverter;
@@ -61,15 +57,16 @@ public class Payment extends BaseTimeEntity {
 	private Customer customer;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "payment_status", length = 16, nullable = false)
-	private PaymentStatus paymentStatus;
+	@Column(name = "payment_status", nullable = false)
+	private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "payment_method", length = 16, nullable = false)
-	private PaymentMethod paymentMethod;
+	@Column(name = "payment_method", nullable = false)
+	private PaymentMethod paymentMethod = PaymentMethod.KAKAOPAY;
 
-	@Column(name = "paid_amount", precision = 18, scale = 2)
-	private BigDecimal paidAmount;
+	// 금액 INT
+	@Column(name = "paid_amount")
+	private Integer paidAmount;
 
 	@Column(name = "pg_transaction_id", length = 120)
 	private String pgTransactionId;
@@ -77,21 +74,12 @@ public class Payment extends BaseTimeEntity {
 	@Column(name = "approval_code", length = 60)
 	private String approvalCode;
 
-	@JdbcTypeCode(SqlTypes.JSON)
-	@Column(name = "payload_json", columnDefinition = "JSON")
+	// JSON → 문자열 매핑 (필요 시 JsonType 사용 가능)
+	@Column(name = "payload_json", columnDefinition = "json")
 	private String payloadJson;
 
 	@Column(name = "receipt_url", length = 512)
 	private String receiptUrl;
-
-	@Column(name = "requested_at")
-	private Instant requestedAt;
-
-	@Column(name = "approved_at")
-	private Instant approvedAt;
-
-	@Column(name = "failed_at")
-	private Instant failedAt;
 
 	@Column(name = "failure_reason", length = 255)
 	private String failureReason;

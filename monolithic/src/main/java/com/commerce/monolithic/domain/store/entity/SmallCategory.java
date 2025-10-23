@@ -38,19 +38,15 @@ public class SmallCategory extends BaseTimeEntity {
 
 	@Id
 	@Convert(converter = UuidBinaryAttributeConverter.class)
-	@Column(name = "id", columnDefinition = "BINARY(16)")
+	@Column(name = "id", columnDefinition = "BINARY(16)", nullable = false)
 	private UUID id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "big_id", nullable = false,
-		foreignKey = @ForeignKey(name = "fk_smallcat_big"))
+	@JoinColumn(name = "big_id", nullable = false, foreignKey = @ForeignKey(name = "fk_smallcat_big"))
 	private BigCategory bigCategory;
 
 	@Column(name = "name", length = 120, nullable = false)
 	private String name;
-
-	@Column(name = "slug", length = 140, nullable = false)
-	private String slug;
 
 	@PrePersist
 	private void setIdIfNull() {

@@ -45,15 +45,14 @@ public class Store extends BaseTimeEntity {
 	private UUID id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "manager_id", nullable = false,
-		foreignKey = @ForeignKey(name = "fk_stores_manager"))
+	@JoinColumn(name = "manager_id", nullable = false, foreignKey = @ForeignKey(name = "fk_stores_manager"))
 	private Manager manager;
 
 	@Column(name = "name", length = 120, nullable = false)
 	private String name;
 
-	@Column(name = "slug", length = 140, nullable = false)
-	private String slug;
+	@Column(name = "description", length = 1000)
+	private String description;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", length = 16, nullable = false)

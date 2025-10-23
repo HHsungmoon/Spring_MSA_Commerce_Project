@@ -52,9 +52,11 @@ public class StoreApplication extends BaseTimeEntity {
 	private Manager manager;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "store_id",
-		foreignKey = @ForeignKey(name = "fk_storeapps_store"))
+	@JoinColumn(name = "store_id", foreignKey = @ForeignKey(name = "fk_storeapps_store"))
 	private Store store;
+
+	@Column(name = "description", length = 1000)
+	private String description;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", length = 16, nullable = false)
