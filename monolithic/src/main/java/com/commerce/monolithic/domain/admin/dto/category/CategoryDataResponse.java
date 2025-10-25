@@ -14,37 +14,32 @@ import lombok.Getter;
 @Schema(name = "CategoryDataResponse", description = "카테고리 단건 응답")
 public class CategoryDataResponse {
 
-	@Schema(description = "카테고리 ID", example = "9c3b4b9e-0a7f-4c8e-9f6d-1234567890ab")
+	@Schema(description = "카테고리 ID", example = "f1c2a7b1-5c1a-4a35-9b9e-82c8a0d12c9e")
 	private final UUID id;
 
-	@Schema(description = "대분류 여부", example = "true")
+	@Schema(description = "대분류 여부(true: 대분류, false: 소분류)", example = "true")
 	private final boolean big;
 
-	@Schema(description = "이름", example = "한식")
+	@Schema(description = "카테고리 이름", example = "분식")
 	private final String name;
 
-	@Schema(description = "슬러그", example = "korean-food")
-	private final String slug;
-
-	@Schema(description = "부모 대분류 ID(소분류일 때만)", example = "f1c2a7b1-5c1a-4a35-9b9e-82c8a0d12c9e")
+	@Schema(description = "부모 대분류 ID(소분류일 경우만 값 존재)", example = "c8f9d1a2-3b4c-5d6e-7f80-9123456789ab")
 	private final UUID parentId;
 
-	public static CategoryDataResponse from(BigCategory b) {
+	public static CategoryDataResponse of(BigCategory b) {
 		return CategoryDataResponse.builder()
 			.id(b.getId())
 			.big(true)
 			.name(b.getName())
-			.slug(b.getSlug())
 			.parentId(null)
 			.build();
 	}
 
-	public static CategoryDataResponse from(SmallCategory s) {
+	public static CategoryDataResponse of(SmallCategory s) {
 		return CategoryDataResponse.builder()
 			.id(s.getId())
 			.big(false)
 			.name(s.getName())
-			.slug(s.getSlug())
 			.parentId(s.getBigCategory() != null ? s.getBigCategory().getId() : null)
 			.build();
 	}

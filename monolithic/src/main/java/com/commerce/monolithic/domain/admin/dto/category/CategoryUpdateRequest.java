@@ -16,6 +16,4 @@ public class CategoryUpdateRequest {
 	@Schema(description = "카테고리 이름", example = "분식")
 	private String name;
 
-	@Schema(description = "슬러그", example = "snack-bar")
-	private String slug;
 }

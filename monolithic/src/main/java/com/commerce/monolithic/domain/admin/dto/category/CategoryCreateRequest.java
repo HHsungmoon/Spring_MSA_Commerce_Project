@@ -16,6 +16,4 @@ public class CategoryCreateRequest {
 	@Schema(description = "카테고리 이름", example = "한식")
 	private String name;
 
-	@Schema(description = "슬러그", example = "korean-food")
-	private String slug;
 }

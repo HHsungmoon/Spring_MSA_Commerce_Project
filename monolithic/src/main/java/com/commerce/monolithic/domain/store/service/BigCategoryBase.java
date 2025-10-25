@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.commerce.monolithic.autoresponse.error.BusinessException;
 import com.commerce.monolithic.domain.store.entity.BigCategory;
 import com.commerce.monolithic.domain.store.repository.BigCategoryRepository;
+import com.commerce.monolithic.domain.store.repository.SmallCategoryRepository;
 import com.commerce.monolithic.domain.store.response.CategoryErrorCode;
 
 import lombok.AllArgsConstructor;
@@ -18,6 +19,7 @@ import lombok.AllArgsConstructor;
 public class BigCategoryBase {
 
 	private final BigCategoryRepository bigCategoryRepository;
+	private final SmallCategoryRepository smallCategoryRepository;
 
 	@Transactional(readOnly = true)
 	public List<BigCategory> findAll() {
@@ -38,5 +40,12 @@ public class BigCategoryBase {
 	@Transactional
 	public void delete(BigCategory entity) {
 		bigCategoryRepository.delete(entity);
+	}
+
+	@Transactional(readOnly = true)
+	public boolean hasChildren(UUID bigCategoryId) {
+		return smallCategoryRepository.findAll().stream()
+			.anyMatch(s -> s.getBigCategory() != null
+				&& bigCategoryId.equals(s.getBigCategory().getId()));
 	}
 }

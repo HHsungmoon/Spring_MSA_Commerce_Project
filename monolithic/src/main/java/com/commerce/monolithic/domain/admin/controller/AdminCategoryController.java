@@ -13,18 +13,22 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.commerce.monolithic.autoresponse.ApiResponse;
+import com.commerce.monolithic.autoresponse.error.BusinessException;
 import com.commerce.monolithic.domain.admin.dto.category.CategoryCreateRequest;
 import com.commerce.monolithic.domain.admin.dto.category.CategoryDataResponse;
 import com.commerce.monolithic.domain.admin.dto.category.CategoryTreeResponse;
 import com.commerce.monolithic.domain.admin.dto.category.CategoryUpdateRequest;
+import com.commerce.monolithic.domain.admin.response.AdminErrorCode;
 import com.commerce.monolithic.domain.admin.response.AdminSuccessCode;
 import com.commerce.monolithic.domain.admin.service.AdminBase;
 import com.commerce.monolithic.domain.admin.service.AdminCategoryService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 
@@ -42,7 +46,7 @@ public class AdminCategoryController {
 	@GetMapping
 	public ResponseEntity<ApiResponse<CategoryTreeResponse>> getTree(@AuthenticationPrincipal UserDetails userDetails) {
 		UUID adminId = adminBase.requireAdminId(userDetails);
-		CategoryTreeResponse res = categoryService.getTree(adminId);
+		CategoryTreeResponse res = categoryService.getTree();
 		return ApiResponse.success(AdminSuccessCode.CATEGORY_LIST_OK, res);
 	}
 
@@ -52,7 +56,7 @@ public class AdminCategoryController {
 		@AuthenticationPrincipal UserDetails userDetails,
 		@RequestBody CategoryCreateRequest req) {
 		UUID adminId = adminBase.requireAdminId(userDetails);
-		CategoryDataResponse res = categoryService.create(adminId, req);
+		CategoryDataResponse res = categoryService.create(req);
 		return ApiResponse.success(AdminSuccessCode.CATEGORY_CREATE_OK, res);
 	}
 
@@ -63,7 +67,7 @@ public class AdminCategoryController {
 		@PathVariable String categoryId,
 		@RequestBody CategoryUpdateRequest req) {
 		UUID adminId = adminBase.requireAdminId(userDetails);
-		CategoryDataResponse res = categoryService.update(adminId, categoryId, req);
+		CategoryDataResponse res = categoryService.update(adminId, req);
 		return ApiResponse.success(AdminSuccessCode.CATEGORY_UPDATE_OK, res);
 	}
 
@@ -71,9 +75,26 @@ public class AdminCategoryController {
 	@DeleteMapping("/{categoryId}")
 	public ResponseEntity<ApiResponse<Void>> delete(
 		@AuthenticationPrincipal UserDetails userDetails,
-		@PathVariable String categoryId) {
+		@PathVariable String categoryId,
+		@Parameter(description = "대분류 삭제 여부(true: 대분류, false: 소분류)", required = true, example = "true")
+		@RequestParam("big") boolean big
+	) {
+		// 관리자 인증 (미사용이어도 인증 강제 겸 로그 목적)
 		UUID adminId = adminBase.requireAdminId(userDetails);
-		categoryService.delete(adminId, categoryId);
+
+		final UUID id;
+		try {
+			id = UUID.fromString(categoryId);
+		} catch (Exception e) {
+			throw new BusinessException(AdminErrorCode.CATEGORY_NOT_FOUND);
+		}
+
+		if (big) {
+			categoryService.deleteBig(id);
+		} else {
+			categoryService.deleteSmall(id);
+		}
+
 		return ApiResponse.success(AdminSuccessCode.CATEGORY_DELETE_OK, null);
 	}
 }
