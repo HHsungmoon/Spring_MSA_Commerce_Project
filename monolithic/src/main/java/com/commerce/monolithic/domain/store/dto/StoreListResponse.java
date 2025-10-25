@@ -11,19 +11,14 @@ import lombok.Getter;
 
 @Getter
 @Builder
-@Schema(name = "StoreSummary", description = "스토어 요약")
-public class StoreSummary {
-	@Schema(description = "스토어 ID")
+@Schema(name = "StoreListResponse", description = "스토어 목록 아이템 응답")
+public class StoreListResponse {
 	private final UUID id;
-
-	@Schema(description = "이름")
 	private final String name;
-
-	@Schema(description = "상태", allowableValues = {"ACTIVE", "INACTIVE", "BANNED"})
 	private final GlobalEnum.StoreStatus status;
 
-	public static StoreSummary from(Store s) {
-		return StoreSummary.builder()
+	public static StoreListResponse form(Store s) {
+		return StoreListResponse.builder()
 			.id(s.getId())
 			.name(s.getName())
 			.status(s.getStatus())
